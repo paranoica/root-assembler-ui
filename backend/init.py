@@ -196,7 +196,7 @@ def analyze_code(code, arch, emul):
 # endregion
 
 # region: client <-> server communcation
-async def process_client_messages(websocket):
+async def process_client_messages(websocket, path):
     logger.info("New client has been connected!")
 
     try:
@@ -220,14 +220,14 @@ async def process_client_messages(websocket):
     except websockets.exceptions.ConnectionClosed:
         logger.info("Client has been disconnected!")
 
-async def provided_task_connections(websocket):
+async def provided_task_connections(websocket, path):
     async for message in websocket:
         await asyncio.create_task(process_client_messages(websocket, message))
 # endregion
 
 # region: provide initialization
 async def main():
-    server = await websockets.serve(provided_task_connections, "localhost", "5000")
+    server = await websockets.serve(provided_task_connections, "localhost", 5000)
     logger.info("Server has been started on http://localhost:5000/")
 
     await server.wait_closed()
