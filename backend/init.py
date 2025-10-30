@@ -105,7 +105,7 @@ class Emulator:
         try:
             self.memcl.emu_start(self.memory_base, self.memory_base + len(code))
         except UcError as e:
-            logger.error(f"Client got an emulation error at initialization: {e}!")
+            logger.error(f"client got an emulation error at initialization: {e}!")
             raise
 
 emulators = {arch: Emulator(arch) for arch in ARCHITECTURES}
@@ -117,9 +117,9 @@ def dissamble_and_emulate_observant_code(code, arch, emul):
         if isinstance(code, str):
             code = bytes.fromhex(code.replace(" ", ""))
 
-        dsm = []
-        eml = emulators[arch]
         mdc = Cs(*ARCHITECTURES[arch]["cs"])
+        eml = emulators[arch]
+        dsm = []
 
         if emul:
             eml.reset_registration_states()
@@ -134,23 +134,23 @@ def dissamble_and_emulate_observant_code(code, arch, emul):
                 try:
                     eml.emulate(bytes(i.bytes))
                 except UcError as e:
-                    logger.error(f"Client got an emulation error at instruction {i.mnemonic} {i.op_str}: {e}!")
+                    logger.error(f"client got an emulation error at instruction {i.mnemonic} {i.op_str}: {e}!")
                     raise ValueError(f"Client got an emulation error: {e}!")
 
                 after_registration_state = eml.get_registration_state()
             else:
                 before_registration_state = after_registration_state = None
 
-        dsm.append({
-            "address": f"0x{i.address:x}",
-            "mnemonic": i.mnemonic,
+            dsm.append({
+                "address": f"0x{i.address:x}",
+                "mnemonic": i.mnemonic,
 
-            "op_str": i.op_str,
-            "bytes": " ".join([f"{b:02x}" for b in i.bytes]),
+                "op_str": i.op_str,
+                "bytes": " ".join([f"{b:02x}" for b in i.bytes]),
 
-            "after": after_registration_state,
-            "before": before_registration_state
-        })
+                "after": after_registration_state,
+                "before": before_registration_state
+            })
 
         return {
             "instructions": dsm,
@@ -209,16 +209,16 @@ async def process_client_messages(websocket, path):
 
                 await websocket.send(json.dumps({"result": result}))
             except json.JSONDecodeError as e:
-                logger.error(f"Client got a JSON-decode error: {e}!")
+                logger.error(f"client got a JSON-decode error: {e}!")
                 await websocket.send(json.dumps({"error": "Invalid JSON"}))
             except ValueError as e:
-                logger.error(f"Client got a value error: {e}!")
+                logger.error(f"client got a value error: {e}!")
                 await websocket.send(json.dumps({"error": str(e)}))
             except Exception as e:
-                logger.error(f"Client got an unxpected error: {e}!")
+                logger.error(f"client got an unxpected error: {e}!")
                 await websocket.send(json.dumps({"error": f"Server error: {str(e)}"}))
     except websockets.exceptions.ConnectionClosed:
-        logger.info("Client has been disconnected!")
+        logger.info("client has been disconnected!")
 
 async def provided_task_connections(websocket, path):
     async for message in websocket:
